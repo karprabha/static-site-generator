@@ -1,5 +1,5 @@
 from leafnode import LeafNode
-from textnode import TextType
+from textnode import TextNode, TextType
 
 
 def text_node_to_html_node(text_node):
@@ -24,3 +24,20 @@ def text_node_to_html_node(text_node):
                 "src": text_node.url,
                 "alt": text_node.text
             })
+
+
+def split_nodes_delimiter(old_nodes, delimiter, text_type):
+    new_nodes = []
+    for node in old_nodes:
+        if node.text_type == TextType.TEXT:
+            split_text = node.text.split(delimiter)
+            for i in range(0, len(split_text), 3):
+                new_nodes.append(TextNode(split_text[i], TextType.TEXT))
+                if i + 1 < len(split_text):
+                    new_nodes.append(TextNode(split_text[i+1], text_type))
+                if i + 2 < len(split_text):
+                    new_nodes.append(TextNode(split_text[i+2], TextType.TEXT))
+        else:
+            new_nodes.append(node)
+
+        return new_nodes
