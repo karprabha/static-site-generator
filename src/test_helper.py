@@ -1,6 +1,7 @@
 import unittest
 
-from helper import extract_markdown_images, extract_markdown_links, markdown_to_blocks, split_nodes_delimiter, split_nodes_image, split_nodes_link, text_node_to_html_node, text_to_textnodes
+from constants import BlockType
+from helper import block_to_block_type, extract_markdown_images, extract_markdown_links, markdown_to_blocks, split_nodes_delimiter, split_nodes_image, split_nodes_link, text_node_to_html_node, text_to_textnodes
 from textnode import TextNode, TextType
 
 class TestHelper(unittest.TestCase):
@@ -172,6 +173,74 @@ This is the same paragraph on a new line
                 "- This is a list\n- with items",
             ],
         )
+
+    def test_block_to_block_type_paragraph(self):
+        block = "This is **bolded** paragraph"
+        block_type = block_to_block_type(block)
+
+        self.assertEqual(
+            BlockType.PARAGRAPH,
+            block_type
+        )
+
+    def test_block_to_block_type_heading_h1(self):
+        block = "# This is h1 heading"
+        block_type = block_to_block_type(block)
+
+        self.assertEqual(
+            BlockType.HEADING,
+            block_type
+        )
+
+    def test_block_to_block_type_heading_h6(self):
+        block = "###### This is h6 heading"
+        block_type = block_to_block_type(block)
+
+        self.assertEqual(
+            BlockType.HEADING,
+            block_type
+        )
+
+    def test_block_to_block_type_code_clock(self):
+        block = """```
+print("Hello World")
+```
+"""
+        block_type = block_to_block_type(block)
+
+        self.assertEqual(
+            BlockType.CODE,
+            block_type
+        )
+
+    def test_block_to_block_type_quote_clock(self):
+        block = "> Knowing is not enough, we must apply"
+
+        block_type = block_to_block_type(block)
+
+        self.assertEqual(
+            BlockType.QUOTE,
+            block_type
+        )
+
+    def test_block_to_block_type_unorderd_list(self):
+        block = "- This is a list\n- with items"
+        block_type = block_to_block_type(block)
+
+        self.assertEqual(
+            BlockType.UNORDERED_LIST,
+            block_type
+        )
+
+    def test_block_to_block_type_orderd_list(self):
+        block = "1. This is a list\n2. with items"
+        block_type = block_to_block_type(block)
+
+        self.assertEqual(
+            BlockType.ORDERED_LIST,
+            block_type
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

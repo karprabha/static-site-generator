@@ -1,5 +1,6 @@
 
 import re
+from constants import BlockType
 from leafnode import LeafNode
 from textnode import TextNode, TextType
 
@@ -125,3 +126,23 @@ def markdown_to_blocks(markdown):
     )
 
     return blocks
+
+def block_to_block_type(block):
+    heading_regex = r"^(#{1,6})\s+(.*)"
+    code_block_regex = r"```[\s\S]*?```"
+    quote_block_regex = r"^>.*(?:\r?\n>.*)*$"
+    ordered_list_regex = r"^\d+\..*$"
+    unordered_list_regex = r"^[-\*\+].*$"
+
+    if re.search(heading_regex, block):
+        return BlockType.HEADING
+    if re.search(code_block_regex, block):
+        return BlockType.CODE
+    if re.search(quote_block_regex, block):
+        return BlockType.QUOTE
+    if re.search(ordered_list_regex, block, flags=re.MULTILINE):
+        return BlockType.ORDERED_LIST
+    if re.search(unordered_list_regex, block, flags=re.MULTILINE):
+        return BlockType.UNORDERED_LIST
+
+    return BlockType.PARAGRAPH
