@@ -264,7 +264,7 @@ This is the same paragraph on a new line
         html_node = quote_block_to_html_node(block)
 
         self.assertEqual(
-            '<blockquote><p>This is quote</p><p>this is <b>next</b> line</p></blockquote>',
+            '<blockquote>This is quote\nthis is <b>next</b> line</blockquote>',
             html_node.to_html()
         )
 
