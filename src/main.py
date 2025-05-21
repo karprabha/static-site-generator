@@ -1,5 +1,6 @@
 import os
 import shutil
+import sys
 
 from helper import extract_title, markdown_to_html_node
 
@@ -30,7 +31,7 @@ def copy_dir(src_path, dest_path):
         except Exception as e:
             print(f"Failed to copy {s} to {d}. Reason: {e}")
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
 
     with open(from_path, encoding='utf-8') as file:
@@ -44,10 +45,12 @@ def generate_page(from_path, template_path, dest_path):
 
     output = template.replace("{{ Title }}", title).replace("{{ Content }}", html_string)
 
+    output = output.replace('href="/', f'href="{basepath}').replace('src="/', f'src="{basepath}')
+
     with open(dest_path, 'w', encoding='utf-8') as file:
         file.write(output)
 
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath):
     os.makedirs(dest_dir_path, exist_ok=True)
     for item in os.listdir(dir_path_content):
         s = os.path.join(dir_path_content, item)
@@ -57,32 +60,34 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
             filename = os.path.splitext(item)[0] + ".html"
             d = os.path.join(dest_dir_path, filename)
             try:
-                generate_page(s, template_path, d)
+                generate_page(s, template_path, d, basepath)
                 print(f"Generated {d} from {s}")
             except Exception as e:
                 print(f"Failed to generate {s} to {d}. Reason: {e}")
 
         elif os.path.isdir(s):
             d = os.path.join(dest_dir_path, item)
-            generate_pages_recursive(s, template_path, d)
+            generate_pages_recursive(s, template_path, d, basepath)
 
 def main():
-    public_path = "./public"
+    basepath = "/" if len(sys.argv) < 2 else sys.argv[1]
+
+    output_dir = "./docs"
     static_path = "./static"
 
-    os.makedirs(public_path, exist_ok=True)
-    clean_dir(public_path)
+    os.makedirs(output_dir, exist_ok=True)
+    clean_dir(output_dir)
 
     if os.path.exists(static_path):
-        copy_dir(static_path, public_path)
+        copy_dir(static_path, output_dir)
     else:
         print(f"Source path '{static_path}' does not exist. Nothing to copy.")
 
     content_path = "./content"
     template_path = "./template.html"
-    dest_path = "./public"
+    dest_path = output_dir
 
-    generate_pages_recursive(content_path, template_path, dest_path)
+    generate_pages_recursive(content_path, template_path, dest_path, basepath)
 
 if __name__ == "__main__":
     main()
