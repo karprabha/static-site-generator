@@ -27,7 +27,6 @@ def text_node_to_html_node(text_node):
                 "alt": text_node.text
             })
 
-
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
     new_nodes = []
     for node in old_nodes:
@@ -113,3 +112,16 @@ def text_to_textnodes(text):
         text_nodes = split_nodes_delimiter(text_nodes, text_type_delimiter_map[text_type], text_type)
 
     return text_nodes
+
+def markdown_to_blocks(markdown):
+    blocks = list(
+        filter(
+            lambda x: x != "",
+            map(
+                lambda x: x.strip(),
+                markdown.split("\n\n")
+            )
+        )
+    )
+
+    return blocks
