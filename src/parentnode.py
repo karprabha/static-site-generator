@@ -12,4 +12,4 @@ class ParentNode(HTMLNode):
         if not self.children:
             raise ValueError("children is required!")
 
-        return f"<{self.tag}{self.props_to_html}>{''.join(map(lambda x: x.to_html(), self.children))}</{self.tag}>"
+        return f"<{self.tag}{self.props_to_html()}>{''.join(map(lambda x: x.to_html(), self.children))}</{self.tag}>"
