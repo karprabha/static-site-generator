@@ -1,6 +1,8 @@
 import os
 import shutil
 
+from helper import extract_title, markdown_to_html_node
+
 def clean_dir(path):
     for filename in os.listdir(path):
         file_path = os.path.join(path, filename)
@@ -28,6 +30,23 @@ def copy_dir(src_path, dest_path):
         except Exception as e:
             print(f"Failed to copy {s} to {d}. Reason: {e}")
 
+def generate_page(from_path, template_path, dest_path):
+    print(f"Generating page from {from_path} to {dest_path} using {template_path}")
+
+    with open(from_path, encoding='utf-8') as file:
+        markdown = file.read()
+
+    with open(template_path, encoding='utf-8') as file:
+        template = file.read()
+
+    title = extract_title(markdown)
+    html_string = markdown_to_html_node(markdown).to_html()
+
+    output = template.replace("{{ Title }}", title).replace("{{ Content }}", html_string)
+
+    with open(dest_path, 'w', encoding='utf-8') as file:
+        file.write(output)
+
 def main():
     public_path = "./public"
     static_path = "./static"
@@ -39,6 +58,8 @@ def main():
         copy_dir(static_path, public_path)
     else:
         print(f"Source path '{static_path}' does not exist. Nothing to copy.")
+
+    generate_page("./content/index.md", "./template.html", "./public/index.html")
 
 if __name__ == "__main__":
     main()
