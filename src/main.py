@@ -47,6 +47,25 @@ def generate_page(from_path, template_path, dest_path):
     with open(dest_path, 'w', encoding='utf-8') as file:
         file.write(output)
 
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+    os.makedirs(dest_dir_path, exist_ok=True)
+    for item in os.listdir(dir_path_content):
+        s = os.path.join(dir_path_content, item)
+
+        # Change .md to .html for the destination file
+        if os.path.isfile(s) and s.endswith(".md"):
+            filename = os.path.splitext(item)[0] + ".html"
+            d = os.path.join(dest_dir_path, filename)
+            try:
+                generate_page(s, template_path, d)
+                print(f"Generated {d} from {s}")
+            except Exception as e:
+                print(f"Failed to generate {s} to {d}. Reason: {e}")
+
+        elif os.path.isdir(s):
+            d = os.path.join(dest_dir_path, item)
+            generate_pages_recursive(s, template_path, d)
+
 def main():
     public_path = "./public"
     static_path = "./static"
@@ -59,7 +78,11 @@ def main():
     else:
         print(f"Source path '{static_path}' does not exist. Nothing to copy.")
 
-    generate_page("./content/index.md", "./template.html", "./public/index.html")
+    content_path = "./content"
+    template_path = "./template.html"
+    dest_path = "./public"
+
+    generate_pages_recursive(content_path, template_path, dest_path)
 
 if __name__ == "__main__":
     main()
