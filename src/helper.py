@@ -186,8 +186,6 @@ def quote_block_to_html_node(block):
     )
 
     children = text_to_children("\n".join(lines).strip())
-    # for line in lines:
-    #     children.append(ParentNode("p", text_to_children(line)))
 
     return ParentNode("blockquote", children)
 
