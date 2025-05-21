@@ -150,11 +150,14 @@ def text_to_children(text):
     text_nodes = text_to_textnodes(text)
 
     if text_nodes == None:
-        return None
+        return [text_node_to_html_node(TextNode(" ", TextType.TEXT))]
 
     children = []
     for text_node in text_nodes:
         children.append(text_node_to_html_node(text_node))
+
+    if len(children) == 0:
+        return [text_node_to_html_node(TextNode(" ", TextType.TEXT))]
 
     return children
 
