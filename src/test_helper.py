@@ -1,7 +1,7 @@
 import unittest
 
-from constants import BlockType
-from helper import block_to_block_type, extract_markdown_images, extract_markdown_links, markdown_to_blocks, split_nodes_delimiter, split_nodes_image, split_nodes_link, text_node_to_html_node, text_to_textnodes
+from blocknode import BlockType
+from helper import block_to_block_type, block_to_html_node, code_block_to_html_node, extract_markdown_images, extract_markdown_links, heading_block_to_html_node, markdown_to_blocks, markdown_to_html_node, ordered_list_block_to_html_node, quote_block_to_html_node, split_nodes_delimiter, split_nodes_image, split_nodes_link, text_node_to_html_node, text_to_textnodes, unordered_list_block_to_html_node
 from textnode import TextNode, TextType
 
 class TestHelper(unittest.TestCase):
@@ -133,26 +133,26 @@ class TestHelper(unittest.TestCase):
             new_nodes,
         )
 
-        def test_text_to_textnodes(self):
-            text = "This is **text** with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+    def test_text_to_textnodes(self):
+        text = "This is **text** with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
 
-            text_nodes = text_to_textnodes(text)
+        text_nodes = text_to_textnodes(text)
 
-            self.assertListEqual(
-                [
-                    TextNode("This is ", TextType.TEXT),
-                    TextNode("text", TextType.BOLD),
-                    TextNode(" with an ", TextType.TEXT),
-                    TextNode("italic", TextType.ITALIC),
-                    TextNode(" word and a ", TextType.TEXT),
-                    TextNode("code block", TextType.CODE),
-                    TextNode(" and an ", TextType.TEXT),
-                    TextNode("obi wan image", TextType.IMAGE, "https://i.imgur.com/fJRm4Vk.jpeg"),
-                    TextNode(" and a ", TextType.TEXT),
-                    TextNode("link", TextType.LINK, "https://boot.dev"),
-                ],
-                text_nodes
-            )
+        self.assertListEqual(
+            [
+                TextNode("This is ", TextType.TEXT),
+                TextNode("text", TextType.BOLD),
+                TextNode(" with an ", TextType.TEXT),
+                TextNode("italic", TextType.ITALIC),
+                TextNode(" word and a ", TextType.TEXT),
+                TextNode("code block", TextType.CODE),
+                TextNode(" and an ", TextType.TEXT),
+                TextNode("obi wan image", TextType.IMAGE, "https://i.imgur.com/fJRm4Vk.jpeg"),
+                TextNode(" and a ", TextType.TEXT),
+                TextNode("link", TextType.LINK, "https://boot.dev"),
+            ],
+            text_nodes
+        )
 
     def test_markdown_to_blocks(self):
         md = """
@@ -202,10 +202,7 @@ This is the same paragraph on a new line
         )
 
     def test_block_to_block_type_code_clock(self):
-        block = """```
-print("Hello World")
-```
-"""
+        block = '```print("Hello World")```'
         block_type = block_to_block_type(block)
 
         self.assertEqual(
@@ -241,6 +238,97 @@ print("Hello World")
             block_type
         )
 
+    def test_heading_block_to_html_node(self):
+        block = "### This is title"
 
+        html_node = heading_block_to_html_node(block)
+
+        self.assertEqual(
+            "<h3>This is title</h3>",
+            html_node.to_html()
+        )
+
+    def test_code_block_to_html_node(self):
+        block = '```print("Hello World")\n- This is list```'
+
+        html_node = code_block_to_html_node(block)
+
+        self.assertEqual(
+            '<pre><code>print("Hello World")\n- This is list</code></pre>',
+            html_node.to_html()
+        )
+
+    def test_quote_block_to_html_node(self):
+        block = ">This is quote\n>this is **next** line"
+
+        html_node = quote_block_to_html_node(block)
+
+        self.assertEqual(
+            '<blockquote><p>This is quote</p><p>this is <b>next</b> line</p></blockquote>',
+            html_node.to_html()
+        )
+
+    def test_unordered_list_block_to_html_node(self):
+        block = "- This is unordered list\n- this is _next_ item"
+
+        html_node = unordered_list_block_to_html_node(block)
+
+        self.assertEqual(
+            '<ul><li>This is unordered list</li><li>this is <i>next</i> item</li></ul>',
+            html_node.to_html()
+        )
+
+    def test_ordered_list_block_to_html_node(self):
+        block = "1. This is ordered list\n2. this is _next_ item"
+
+        html_node = ordered_list_block_to_html_node(block)
+
+        self.assertEqual(
+            '<ol><li>This is ordered list</li><li>this is <i>next</i> item</li></ol>',
+            html_node.to_html()
+        )
+
+    def test_block_to_html_node(self):
+        block = "### This is title"
+        block_type = BlockType.HEADING
+
+        html_node = block_to_html_node(block, block_type)
+
+        self.assertEqual(
+            "<h3>This is title</h3>",
+            html_node.to_html()
+        )
+
+    def test_paragraphs(self):
+        md = """
+This is **bolded** paragraph
+text in a p
+tag here
+
+This is another paragraph with _italic_ text and `code` here
+
+"""
+
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            "<div><p>This is <b>bolded</b> paragraph text in a p tag here</p><p>This is another paragraph with <i>italic</i> text and <code>code</code> here</p></div>",
+            html
+        )
+
+    def test_codeblock(self):
+        md = """
+```
+This is text that _should_ remain
+the **same** even with inline stuff
+```
+"""
+
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            "<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff</code></pre></div>",
+            html
+        )
 if __name__ == "__main__":
     unittest.main()
