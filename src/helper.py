@@ -51,3 +51,51 @@ def extract_markdown_images(text):
 def extract_markdown_links(text):
     matches = re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
     return matches
+
+def split_nodes_image(old_nodes):
+    new_nodes = []
+    for node in old_nodes:
+        if node.text_type == TextType.TEXT:
+            text = node.text
+            matches = extract_markdown_images(text)
+            last_idx = 0
+
+            for alt, src in matches:
+                img_markdown = f"![{alt}]({src})"
+                idx = text.find(img_markdown, last_idx)
+                if idx != -1:
+                    if idx > last_idx:
+                        new_nodes.append(TextNode(text[last_idx:idx], TextType.TEXT))
+                    new_nodes.append(TextNode(alt, TextType.IMAGE, src))
+                    last_idx = idx + len(img_markdown)
+
+            if last_idx < len(text):
+                new_nodes.append(TextNode(text[last_idx:], TextType.TEXT))
+        else:
+            new_nodes.append(node)
+
+    return new_nodes
+
+def split_nodes_link(old_nodes):
+    new_nodes = []
+    for node in old_nodes:
+        if node.text_type == TextType.TEXT:
+            text = node.text
+            matches = extract_markdown_links(text)
+            last_idx = 0
+
+            for alt, src in matches:
+                link_markdown = f"[{alt}]({src})"
+                idx = text.find(link_markdown, last_idx)
+                if idx != -1:
+                    if idx > last_idx:
+                        new_nodes.append(TextNode(text[last_idx:idx], TextType.TEXT))
+                    new_nodes.append(TextNode(alt, TextType.LINK, src))
+                    last_idx = idx + len(link_markdown)
+
+            if last_idx < len(text):
+                new_nodes.append(TextNode(text[last_idx:], TextType.TEXT))
+        else:
+            new_nodes.append(node)
+
+    return new_nodes
