@@ -1,7 +1,7 @@
 import unittest
 
 from blocknode import BlockType
-from helper import block_to_block_type, block_to_html_node, code_block_to_html_node, extract_markdown_images, extract_markdown_links, heading_block_to_html_node, markdown_to_blocks, markdown_to_html_node, ordered_list_block_to_html_node, quote_block_to_html_node, split_nodes_delimiter, split_nodes_image, split_nodes_link, text_node_to_html_node, text_to_textnodes, unordered_list_block_to_html_node
+from helper import block_to_block_type, block_to_html_node, code_block_to_html_node, extract_markdown_images, extract_markdown_links, extract_title, heading_block_to_html_node, markdown_to_blocks, markdown_to_html_node, ordered_list_block_to_html_node, quote_block_to_html_node, split_nodes_delimiter, split_nodes_image, split_nodes_link, text_node_to_html_node, text_to_textnodes, unordered_list_block_to_html_node
 from textnode import TextNode, TextType
 
 class TestHelper(unittest.TestCase):
@@ -330,5 +330,24 @@ the **same** even with inline stuff
             "<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff</code></pre></div>",
             html
         )
+
+    def test_extract_title(self):
+        md = """
+# This is heading
+
+This is **bolded** paragraph
+text in a p
+tag here
+
+This is another paragraph with _italic_ text and `code` here
+
+"""
+
+        title = extract_title(md)
+        self.assertEqual(
+            "This is heading",
+            title
+        )
+
 if __name__ == "__main__":
     unittest.main()
